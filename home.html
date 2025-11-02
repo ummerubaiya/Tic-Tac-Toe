@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Tic-Tac-Toe</title>
+    <style>
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffffff, #91bdf6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+/* === 3D Floating X & O Decorations === */
+.background-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.symbol {
+  position: absolute;
+  font-size: 100px;
+  font-weight: 900;
+  opacity: 0.15;
+  text-shadow:
+    0 2px 4px rgba(0,0,0,0.3),
+    0 10px 20px rgba(0,0,0,0.2),
+    inset 0 1px 1px rgba(255,255,255,0.3);
+  transform: rotateX(20deg) rotateY(-20deg);
+  animation: float 8s ease-in-out infinite;
+  user-select: none;
+  pointer-events: none;
+}
+
+.symbol.x {
+  color: #6677e6;
+}
+
+.symbol.o {
+  color: #5122d2;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotateX(20deg) rotateY(-20deg); }
+  50% { transform: translateY(-15px) rotateX(10deg) rotateY(-10deg); }
+}
+
+        .home-container {
+            background-color: rgb(255, 255, 255);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #040154;
+            margin-bottom: 20px;
+        }
+
+       
+  
+        button {
+            padding: 10px 100px;
+            font-size: 1.2rem;
+            background-color: #040154;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            background-color: #1c4ec4;
+            transform: scale(1.05);
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    
+        <!-- X & O Decorations -->
+       
+<div class="background-decorations">
+
+  <!-- Left Side -->
+  <div class="symbol x" style="top:5%; left:5%; font-size:120px;">X</div>
+  <div class="symbol o" style="top:20%; left:12%; font-size:140px;">O</div>
+  <div class="symbol x" style="top:45%; left:8%; font-size:100px;">X</div>
+  <div class="symbol o" style="top:70%; left:15%; font-size:130px;">O</div>
+
+  <!-- Right Side -->
+  <div class="symbol o" style="top:10%; right:5%; font-size:110px;">O</div>
+  <div class="symbol x" style="top:30%; right:12%; font-size:100px;">X</div>
+  <div class="symbol o" style="top:55%; right:8%; font-size:120px;">O</div>
+  <div class="symbol x" style="top:80%; right:10%; font-size:140px;">X</div>
+
+  <!-- Center / Mid scatter -->
+  <div class="symbol x" style="top:35%; left:45%; font-size:110px;">X</div>
+  <div class="symbol o" style="top:65%; left:50%; font-size:100px;">O</div>
+
+
+</div>
+ <!-- Main Content -->
+    <div class="home-container">
+
+ 
+        <h1>Tic-Tac-Toe</h1>
+        <button onclick="startGame()">Start Game</button>
+        
+
+        <footer>&copy; 2024 Tic-Tac-Toe Game</footer>
+    </div>
+
+    <script>
+        function startGame() {
+            window.location.href = "index.html"; // পরের page (mode selection / game) এ redirect
+        }
+
+       
+    </script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffffff, #91bdf6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        header {
+            margin-top: 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #040154;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .controls select,
+        .controls button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .controls button {
+            background-color: #040154;
+            color: white;
+        }
+
+        .controls button:hover {
+            background-color: #1c4ec4;
+            transform: scale(1.05);
+        }
+
+        select {
+            background-color: #f0f0f0;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .board {
+            display: grid;
+            gap: 10px;
+            background-color: #040154;
+            padding: 10px;
+            border-radius: 15px;
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .cell {
+            width: 120px;
+            height: 120px;
+            background-color: #8593be;
+            border: 4px solid #1b2392;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: #f8f8f2;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cell.taken {
+            cursor: not-allowed;
+            background-color: #5a83ed;
+        }
+
+        #game-status {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: #040154;
+        }
+
+        @media (max-width: 500px) {
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tic-Tac-Toe</h1>
+        <div class="controls">
+            <button onclick="resetGame()">Restart Game</button>
+
+            <label for="mode">Select Game Mode:</label>
+            <select id="mode" onchange="setGameMode()">
+                <option value="single">Single Player (vs AI)</option>
+                <option value="double">Two Player</option>
+            </select>
+
+            <label for="difficulty">Select Difficulty:</label>
+            <select id="difficulty" onchange="setDifficulty()">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+
+            <button onclick="window.location.href='leaderboard.html'">Leaderboard</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="board" class="board"></div>
+        <p id="game-status"></p>
+    </main>
+
+    <script>
+        let board = [];
+        let currentPlayer = "X";
+        let gameActive = true;
+        let difficulty = "easy";
+        let gameMode = "single";
+        let gridSize = 3;
+        let isAITurn = false;
+
+        if (!localStorage.getItem('leaderboard')) {
+            const defaultLeaderboard = [
+                { name: 'Human', wins: 0, losses: 0 },
+                { name: 'AI', wins: 0, losses: 0 }
+            ];
+            localStorage.setItem('leaderboard', JSON.stringify(defaultLeaderboard));
+        }
+
+        function setGameMode() {
+            gameMode = document.getElementById('mode').value;
+            resetGame();
+        }
+
+        function setDifficulty() {
+            difficulty = document.getElementById('difficulty').value;
+            gridSize = difficulty === "hard" ? 4 : 3;
+            resetGame();
+        }
+
+        function createBoard() {
+            const boardContainer = document.getElementById('board');
+            boardContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            boardContainer.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+            boardContainer.innerHTML = "";
+            board = Array(gridSize * gridSize).fill("");
+
+            for (let i = 0; i < board.length; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.onclick = () => playerMove(i);
+                boardContainer.appendChild(cell);
+            }
+        }
+
+        function playerMove(index) {
+            if (board[index] === "" && gameActive && !isAITurn) {
+                board[index] = currentPlayer;
+                document.querySelectorAll('.cell')[index].textContent = currentPlayer;
+                document.querySelectorAll('.cell')[index].classList.add('taken');
+                checkGameStatus();
+
+                if (gameActive && gameMode === "single") {
+                    currentPlayer = "O";
+                    isAITurn = true;
+                    setTimeout(aiMove, 500);
+                } else if (gameActive) {
+                    currentPlayer = currentPlayer === "X" ? "O" : "X";
+                }
+            }
+        }
+
+        function aiMove() {
+            let availableMoves = board.map((c, i) => c === "" ? i : null).filter(i => i !== null);
+            if (availableMoves.length === 0) return;
+
+            let move;
+            if (difficulty === "easy") {
+                move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            } else {
+                move = minimax(board, "O", -Infinity, Infinity).index;
+            }
+
+            board[move] = "O";
+            document.querySelectorAll('.cell')[move].textContent = "O";
+            document.querySelectorAll('.cell')[move].classList.add('taken');
+            checkGameStatus();
+
+            if (gameActive) {
+                currentPlayer = "X";
+                isAITurn = false;
+            }
+        }
+
+        function checkGameStatus() {
+            const winningConditions = generateWinningConditions();
+            for (let condition of winningConditions) {
+                const [a, b, c, d] = condition;
+                if (
+                    board[a] !== "" &&
+                    board[a] === board[b] &&
+                    board[a] === board[c] &&
+                    (gridSize === 3 || board[a] === board[d])
+                ) {
+                    document.getElementById('game-status').textContent = `${currentPlayer} has won!`;
+                    updateLeaderboard(currentPlayer === "X" ? "Human" : "AI");
+                    gameActive = false;
+                    return;
+                }
+            }
+
+            if (!board.includes("")) {
+                document.getElementById('game-status').textContent = "It's a draw!";
+                gameActive = false;
+            }
+        }
+
+        function generateWinningConditions() {
+            const c = [];
+            for (let i = 0; i < gridSize; i++) {
+                c.push(Array.from({length:gridSize}, (_,j)=>i*gridSize+j)); // rows
+                c.push(Array.from({length:gridSize}, (_,j)=>j*gridSize+i)); // cols
+            }
+            c.push(Array.from({length:gridSize},(_,i)=>i*gridSize+i)); // diag1
+            c.push(Array.from({length:gridSize},(_,i)=>(i+1)*gridSize-i-1)); // diag2
+            return c;
+        }
+
+        function updateLeaderboard(winner) {
+            let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [
+                { name: 'Human', wins: 0, losses: 0 },
+                { name: 'AI', wins: 0, losses: 0 }
+            ];
+
+            let human = leaderboard.find(p => p.name === "Human");
+            let ai = leaderboard.find(p => p.name === "AI");
+
+            if (!human || !ai) {
+                leaderboard = [
+                    { name: 'Human', wins: 0, losses: 0 },
+                    { name: 'AI', wins: 0, losses: 0 }
+                ];
+                human = leaderboard[0];
+                ai = leaderboard[1];
+            }
+
+            if (winner === "Human") {
+                human.wins++;
+                ai.losses++;
+            } else {
+                ai.wins++;
+                human.losses++;
+            }
+
+            localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+        }
+
+        function resetGame() {
+            currentPlayer = "X";
+            gameActive = true;
+            isAITurn = false;
+            document.getElementById('game-status').textContent = "";
+            createBoard();
+        }
+
+        function minimax(newBoard, player, alpha, beta, depth = 0) {
+            const availSpots = newBoard.map((c, i) => c === "" ? i : null).filter(i => i !== null);
+            const score = evaluateBoard(newBoard);
+            if (Math.abs(score) === 10 || availSpots.length === 0 || depth > 6) return { score };
+
+            let moves = [];
+            for (let i of availSpots) {
+                let move = { index: i };
+                newBoard[i] = player;
+                if (player === "O") {
+                    move.score = minimax(newBoard, "X", alpha, beta, depth + 1).score;
+                    alpha = Math.max(alpha, move.score);
+                } else {
+                    move.score = minimax(newBoard, "O", alpha, beta, depth + 1).score;
+                    beta = Math.min(beta, move.score);
+                }
+                newBoard[i] = "";
+                moves.push(move);
+                if (alpha >= beta) break;
+            }
+
+            return player === "O"
+                ? moves.reduce((a, b) => (a.score > b.score ? a : b))
+                : moves.reduce((a, b) => (a.score < b.score ? a : b));
+        }
+
+        function evaluateBoard(b) {
+            const w = generateWinningConditions();
+            for (let c of w) {
+                const [a,b2,c2,d] = c;
+                if (b[a] && b[a]===b[b2] && b[a]===b[c2] && (gridSize===3||b[a]===b[d]))
+                    return b[a]==="O"?10:-10;
+            }
+            return 0;
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
